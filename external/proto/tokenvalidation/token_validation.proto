@@ -1,0 +1,25 @@
+ syntax="proto3";
+ package tokenvalidation;
+
+ option go_package="./tokenvalidation";
+ //Definetheservice
+ service TokenValidation{
+ //TheRPCmethodtovalidatethetoken
+ rpc ValidateToken(TokenRequest)returns(TokenResponse);
+ }
+//Therequestmessagecontainingthetokentovalidate
+ message TokenRequest{
+ string token=1;
+ }
+ //Theresponsemessage
+ message TokenResponse{
+ string message=1; //Messageindicatingsuccessorfailure4t
+ UserData data=2; //Theuserdataif tokenisvalid
+ }
+ //Theuserdatareturnedif thetokenisvalid
+ message UserData{
+ int64 user_id=1;
+ string username=2;
+ string full_name=3;
+ string email=4;
+ }
