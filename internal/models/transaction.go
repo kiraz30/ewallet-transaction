@@ -14,7 +14,7 @@ type Transaction struct {
 	TransactionStatus string    `json:"transaction_status" gorm:"column:transaction_status;type:ENUM('PENDING', 'SUCCESS', 'FAILED','REVERSED')" valid:"required"`
 	Reference         string    `json:"reference" gorm:"column:reference;type:varchar(255)"`
 	Description       string    `json:"description" gorm:"column:description;type:varchar(255)"`
-	AdditionalInfo    string    `json:"additional_info" gorm:"column:additional_info";type:text`
+	AdditionalInfo    string    `json:"additional_info" gorm:"column:additional_info;type:text"`
 	CreatedAt         time.Time `json:"-" `
 	UpdatedAt         time.Time `json:"-" `
 }
@@ -31,4 +31,15 @@ func (*Transaction) TableName() string {
 type CreateTransactionResponse struct {
 	Reference         string `json:"reference"`
 	TransactionStatus string `json:"transaction_status"`
+}
+
+type UpdateTransactionStatus struct {
+	Reference         string `json:"reference" valid:"required"`
+	TransactionStatus string `json:"transaction_status" valid:"required"`
+	AdditionalInfo    string `json:"additional_info"`
+}
+
+func (l *UpdateTransactionStatus) Validate() error {
+	v := validator.New()
+	return v.Struct(l)
 }

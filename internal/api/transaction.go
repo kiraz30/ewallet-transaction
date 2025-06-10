@@ -66,3 +66,47 @@ func (api *TransactionAPI) CreateTransaction(c *gin.Context) {
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, response)
 
 }
+
+func (api *TransactionAPI) UpdateStatusTransaction(c *gin.Context) {
+	var (
+		log     = helpers.Logger
+		request models.UpdateTransactionStatus
+	)
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		log.Error("failed to get request :", err)
+		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+		return
+	}
+
+	request.Reference = c.Param("reference")
+
+	if err := request.Validate(); err != nil {
+		log.Error("failed to validate request :", err)
+		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+		return
+	}
+
+	token, ok := c.Get("token")
+	if !ok {
+		log.Error("failed to get token")
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+
+	tokenData, ok := token.(models.TokenData)
+	if !ok {
+		log.Error("Failed to parse token data")
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+	err := api.TransactionService.UpdateStatusTransacton(c.Request.Context(), tokenData, &request)
+	if err != nil {
+		log.Error("failed to create transaction :", err)
+		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+		return
+	}
+
+	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, nil)
+
+}
