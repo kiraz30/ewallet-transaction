@@ -19,6 +19,7 @@ type ITransactionService interface {
 	UpdateStatusTransaction(ctx context.Context, tokenData models.TokenData, request *models.UpdateTransactionStatus) error
 	GetTransaction(ctx context.Context, UserID string) ([]models.Transaction, error)
 	GetTransactionDetail(ctx context.Context, reference string) (models.Transaction, error)
+	RefundTransaction(ctx context.Context, tokenData models.TokenData, request *models.RefundTransaction) (models.CreateTransactionResponse, error)
 }
 
 type ITransactionApi interface {
@@ -26,4 +27,5 @@ type ITransactionApi interface {
 	UpdateStatusTransaction(c *gin.Context)
 	GetTransaction(c *gin.Context)
 	GetTransactionDetail(c *gin.Context)
+	RefundTransaction(c *gin.Context)
 }

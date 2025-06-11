@@ -150,3 +150,44 @@ func (s *TransactionService) GetTransaction(ctx context.Context, UserID string) 
 func (s *TransactionService) GetTransactionDetail(ctx context.Context, reference string) (models.Transaction, error) {
 	return s.TransactionRepository.GetTransactionByReference(ctx, reference, true)
 }
+
+func (s *TransactionService) RefundTransaction(ctx context.Context, tokenData models.TokenData, request *models.RefundTransaction) (models.CreateTransactionResponse, error) {
+	var response models.CreateTransactionResponse
+
+	dataTransaction, err := s.TransactionRepository.GetTransactionByReference(ctx, request.Reference, false)
+	if err != nil {
+		return response, errors.Wrap(err, "failed to get transaction by reference")
+	}
+
+	if dataTransaction.TransactionStatus != constants.TransactionStatusSuccess && dataTransaction.TransactionStatus != constants.TransactionTypePurchase {
+		return response, errors.New("transaction status is not success or transaction type not purchase,  cannot refund")
+	}
+	referenceRefund := "REFUND - " + request.Reference
+	requestUpdateBalance := external.UpdateBalance{
+		Reference: referenceRefund,
+		Amount:    dataTransaction.Amount,
+	}
+
+	_, err = s.External.CreditBalance(ctx, tokenData.Token, requestUpdateBalance)
+	if err != nil {
+		return response, errors.Wrap(err, "failed to credit balance")
+	}
+	transaction := models.Transaction{
+		Amount:            dataTransaction.Amount,
+		Reference:         referenceRefund,
+		TransactionType:   constants.TransactionTypeRefund,
+		TransactionStatus: constants.TransactionStatusSuccess,
+		Description:       request.Description,
+		AdditionalInfo:    request.AdditionalInfo,
+	}
+
+	err = s.TransactionRepository.CreateTransaction(ctx, &transaction)
+	if err != nil {
+		return response, errors.Wrap(err, "failed to insert new transaction transaction")
+	}
+
+	response.Reference = transaction.Reference
+	response.TransactionStatus = transaction.TransactionStatus
+
+	return response, nil
+}
