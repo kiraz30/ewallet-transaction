@@ -6,6 +6,7 @@ import (
 	"ewallet-transaction/internal/interfaces"
 	"ewallet-transaction/internal/models"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -56,7 +57,7 @@ func (api *TransactionAPI) CreateTransaction(c *gin.Context) {
 	}
 	request.UserID = int(tokenData.UserID)
 
-	response, err := api.TransactionService.CreateTransacton(c.Request.Context(), &request)
+	response, err := api.TransactionService.CreateTransaction(c.Request.Context(), &request)
 	if err != nil {
 		log.Error("failed to create transaction :", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
@@ -100,7 +101,7 @@ func (api *TransactionAPI) UpdateStatusTransaction(c *gin.Context) {
 		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
 		return
 	}
-	err := api.TransactionService.UpdateStatusTransacton(c.Request.Context(), tokenData, &request)
+	err := api.TransactionService.UpdateStatusTransaction(c.Request.Context(), tokenData, &request)
 	if err != nil {
 		log.Error("failed to create transaction :", err)
 		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
@@ -109,4 +110,54 @@ func (api *TransactionAPI) UpdateStatusTransaction(c *gin.Context) {
 
 	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, nil)
 
+}
+
+func (api *TransactionAPI) GetTransaction(c *gin.Context) {
+	var (
+		log = helpers.Logger
+	)
+
+	token, ok := c.Get("token")
+	if !ok {
+		log.Error("failed to get token")
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+	tokenData, ok := token.(models.TokenData)
+	if !ok {
+		log.Error("Failed to parse token data")
+		helpers.SendResponseHTTP(c, http.StatusInternalServerError, constants.ErrServerError, nil)
+		return
+	}
+	tokenUserID := tokenData.UserID
+	userID := strconv.FormatInt(tokenUserID, 10)
+
+	response, err := api.TransactionService.GetTransaction(c.Request.Context(), userID)
+	if err != nil {
+		log.Error("failed to create transaction :", err)
+		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+		return
+	}
+	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, response)
+}
+
+func (api *TransactionAPI) GetTransactionDetail(c *gin.Context) {
+	var (
+		log = helpers.Logger
+	)
+
+	reference := c.Param("reference")
+	if reference == "" {
+		log.Error("reference is required")
+		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+		return
+	}
+
+	response, err := api.TransactionService.GetTransactionDetail(c.Request.Context(), reference)
+	if err != nil {
+		log.Error("failed to get transaction detail :", err)
+		helpers.SendResponseHTTP(c, http.StatusBadRequest, constants.ErrFailedBadRequest, nil)
+		return
+	}
+	helpers.SendResponseHTTP(c, http.StatusOK, constants.SuccessMessage, response)
 }

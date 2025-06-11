@@ -8,17 +8,22 @@ import (
 )
 
 type ITransactionRepository interface {
-	CreateTransacton(ctx context.Context, trx *models.Transaction) error
-	GetTransactonByReference(ctx context.Context, reference string, includeRefund bool) (models.Transaction, error)
-	UpdateStatusTransacton(ctx context.Context, reference, status, additional_info string) error
+	CreateTransaction(ctx context.Context, trx *models.Transaction) error
+	GetTransactionByReference(ctx context.Context, reference string, includeRefund bool) (models.Transaction, error)
+	UpdateStatusTransaction(ctx context.Context, reference, status, additional_info string) error
+	GetTransaction(ctx context.Context, UserID string) ([]models.Transaction, error)
 }
 
 type ITransactionService interface {
-	CreateTransacton(ctx context.Context, request *models.Transaction) (models.CreateTransactionResponse, error)
-	UpdateStatusTransacton(ctx context.Context, tokenData models.TokenData, request *models.UpdateTransactionStatus) error
+	CreateTransaction(ctx context.Context, request *models.Transaction) (models.CreateTransactionResponse, error)
+	UpdateStatusTransaction(ctx context.Context, tokenData models.TokenData, request *models.UpdateTransactionStatus) error
+	GetTransaction(ctx context.Context, UserID string) ([]models.Transaction, error)
+	GetTransactionDetail(ctx context.Context, reference string) (models.Transaction, error)
 }
 
 type ITransactionApi interface {
 	CreateTransaction(c *gin.Context)
 	UpdateStatusTransaction(c *gin.Context)
+	GetTransaction(c *gin.Context)
+	GetTransactionDetail(c *gin.Context)
 }

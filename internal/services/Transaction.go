@@ -19,7 +19,7 @@ type TransactionService struct {
 	External              interfaces.IExternal
 }
 
-func (s *TransactionService) CreateTransacton(ctx context.Context, request *models.Transaction) (models.CreateTransactionResponse, error) {
+func (s *TransactionService) CreateTransaction(ctx context.Context, request *models.Transaction) (models.CreateTransactionResponse, error) {
 	var response models.CreateTransactionResponse
 
 	request.TransactionStatus = constants.TransactionStatusPending
@@ -33,7 +33,7 @@ func (s *TransactionService) CreateTransacton(ctx context.Context, request *mode
 			return response, errors.Wrap(err, "AdditionalInfo type is invalid")
 		}
 	}
-	err := s.TransactionRepository.CreateTransacton(ctx, request)
+	err := s.TransactionRepository.CreateTransaction(ctx, request)
 	if err != nil {
 		return response, errors.Wrap(err, "failed to create transaction")
 	}
@@ -44,10 +44,10 @@ func (s *TransactionService) CreateTransacton(ctx context.Context, request *mode
 
 }
 
-func (s *TransactionService) UpdateStatusTransacton(ctx context.Context, tokenData models.TokenData, request *models.UpdateTransactionStatus) error {
+func (s *TransactionService) UpdateStatusTransaction(ctx context.Context, tokenData models.TokenData, request *models.UpdateTransactionStatus) error {
 
 	//get transaction by reference
-	dataTransaction, err := s.TransactionRepository.GetTransactonByReference(ctx, request.Reference, false)
+	dataTransaction, err := s.TransactionRepository.GetTransactionByReference(ctx, request.Reference, false)
 	if err != nil {
 		return errors.Wrap(err, "failed to get transaction by reference")
 	}
@@ -136,9 +136,17 @@ func (s *TransactionService) UpdateStatusTransacton(ctx context.Context, tokenDa
 	}
 
 	//update status in DB
-	err = s.TransactionRepository.UpdateStatusTransacton(ctx, request.Reference, request.TransactionStatus, string(byteAdditionalInfo))
+	err = s.TransactionRepository.UpdateStatusTransaction(ctx, request.Reference, request.TransactionStatus, string(byteAdditionalInfo))
 	if err != nil {
 		return errors.Wrap(err, "failed to update transaction status")
 	}
 	return nil
+}
+
+func (s *TransactionService) GetTransaction(ctx context.Context, UserID string) ([]models.Transaction, error) {
+	return s.TransactionRepository.GetTransaction(ctx, UserID)
+}
+
+func (s *TransactionService) GetTransactionDetail(ctx context.Context, reference string) (models.Transaction, error) {
+	return s.TransactionRepository.GetTransactionByReference(ctx, reference, true)
 }
