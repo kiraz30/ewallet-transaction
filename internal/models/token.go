@@ -5,4 +5,5 @@ type TokenData struct {
 	UserName string `json:"user_name"`
 	FullName string `json:"full_name"`
 	Token    string `json:"token"`
+	Email    string `json:"email"`
 }

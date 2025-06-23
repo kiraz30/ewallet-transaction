@@ -45,6 +45,7 @@ func (e *External) ValidateToken(ctx context.Context, token string) (models.Toke
 	resp.UserID = response.Data.UserId
 	resp.UserName = response.Data.Username
 	resp.FullName = response.Data.FullName
+	resp.Email = response.Data.Email
 	return resp, nil
 
 }
